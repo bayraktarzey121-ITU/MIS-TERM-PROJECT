@@ -1,0 +1,96 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import './lib/i18n';
+import { supabase } from './lib/supabase';
+import { User } from './types';
+
+// Components
+import Layout from './components/Layout';
+import Auth from './pages/Auth';
+import CitizenDashboard from './pages/citizen/Dashboard';
+import NewComplaint from './pages/citizen/NewComplaint';
+import ShelterDashboard from './pages/shelter/Dashboard';
+import RegisterAnimal from './pages/shelter/RegisterAnimal';
+import MinistryDashboard from './pages/ministry/Dashboard';
+import AdminDashboard from './pages/admin/Dashboard';
+import AnimalSearch from './pages/shared/AnimalSearch';
+
+export default function App() {
+  const { t } = useTranslation();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Session check logic would go here with Supabase Auth
+    // For now, we mock the user based on instructions or local storage
+    const mockUser: User = {
+      user_id: 'mock-uuid',
+      first_name: 'Ahmet',
+      last_name: 'Yılmaz',
+      email: 'admin@besiktas.bel.tr',
+      role: 'municipality_admin', // Default for dev values
+      auth_level: 4,
+      is_superadmin: false,
+    };
+    
+    // In real app: supabase.auth.getSession().then(({ data: { session } }) => { ... })
+    // We'll simulate a slight delay
+    setTimeout(() => {
+      setUser(mockUser);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-gray-600 font-medium">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth onLogin={(u) => setUser(u)} />;
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout user={user} />}>
+          {/* Role-based routing */}
+          <Route index element={<Navigate to={`/${user.role === 'municipality_admin' ? 'admin' : user.role}`} replace />} />
+          
+          {/* Citizen Routes */}
+          <Route path="citizen" element={<CitizenDashboard user={user} />} />
+          <Route path="citizen/complaints/new" element={<NewComplaint />} />
+          
+          {/* Shelter Routes */}
+          <Route path="shelter" element={<ShelterDashboard user={user} />} />
+          <Route path="shelter/animals/new" element={<RegisterAnimal />} />
+          
+          {/* Admin Routes */}
+          <Route path="admin" element={<AdminDashboard user={user} />} />
+          
+          {/* Ministry Routes */}
+          <Route path="ministry" element={<MinistryDashboard user={user} />} />
+
+          {/* Shared Routes */}
+          <Route path="search" element={<AnimalSearch />} />
+          
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+

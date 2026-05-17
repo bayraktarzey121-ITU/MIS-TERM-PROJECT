@@ -1,0 +1,30 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Helper for masking TC Kimlik
+export const maskTCKimlik = (tc: string) => {
+  if (!tc || tc.length !== 11) return tc;
+  return `${tc.substring(0, 3)}XXXXXX${tc.substring(9)}`;
+};
+
+// Checksum for TC Kimlik
+export const validateTCKimlik = (tc: string) => {
+  if (tc.length !== 11) return false;
+  const digits = tc.split('').map(Number);
+  if (digits[0] === 0) return false;
+  
+  const sumOdd = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+  const sumEven = digits[1] + digits[3] + digits[5] + digits[7];
+  
+  const digit10 = ((sumOdd * 7) - sumEven) % 10;
+  if (digit10 !== digits[9]) return false;
+  
+  const sumAll = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+  if (sumAll % 10 !== digits[10]) return false;
+  
+  return true;
+};

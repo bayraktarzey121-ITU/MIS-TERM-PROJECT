@@ -1,0 +1,201 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { 
+  ArrowLeft, 
+  Dog, 
+  ShieldCheck, 
+  Loader2, 
+  CheckCircle,
+  AlertTriangle
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+export default function RegisterAnimal() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    microchip_id: '',
+    name: '',
+    species: 'Dog',
+    breed: '',
+    age_estimate: '',
+    sex: 'M',
+    color_markings: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.microchip_id.length !== 15) {
+      alert('Mikroçip ID 15 haneli olmalıdır.');
+      return;
+    }
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      setSuccess(true);
+    }, 1500);
+  };
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-6 py-12 text-center animate-fade-in">
+        <div className="rounded-full bg-green-100 p-6">
+          <CheckCircle className="h-16 w-16 text-green-600" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Hayvan Kaydı Tamamlandı</h2>
+          <p className="mt-2 text-gray-500">Mikroçip {formData.microchip_id} başarıyla sisteme işlendi.</p>
+        </div>
+        <div className="flex space-x-4">
+          <button 
+            onClick={() => setSuccess(false)}
+            className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-bold text-white hover:bg-blue-700"
+          >
+            Yeni Kayıt Yap
+          </button>
+          <button 
+            onClick={() => navigate('/shelter')}
+            className="rounded-xl border border-gray-200 px-8 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+          >
+            Panele Dön
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto animate-fade-in">
+      <button 
+        onClick={() => navigate('/shelter')}
+        className="mb-8 flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-gray-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Geri Dön</span>
+      </button>
+
+      <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
+        <div className="flex items-center space-x-4 mb-8">
+           <div className="rounded-xl bg-blue-600 p-3 text-white shadow-lg shadow-blue-200">
+              <Dog className="h-6 w-6" />
+           </div>
+           <div>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Hayvan Kayıt Formu (FR-01)</h2>
+              <p className="text-sm text-gray-500 italic">Merkezi veritabanına yeni bir can ekleyin.</p>
+           </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700">Mikroçip ID (15 Hane)</label>
+              <input 
+                required
+                type="text"
+                pattern="\d{15}"
+                maxLength={15}
+                value={formData.microchip_id}
+                onChange={e => setFormData({...formData, microchip_id: e.target.value.replace(/\D/g, '')})}
+                placeholder="Örn: 900000000000000"
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 font-mono text-lg tracking-widest outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              />
+              <p className="mt-1 text-[10px] text-gray-400 font-bold uppercase tracking-wider">ISO 11784/11785 Standartlarına uygun olmalıdır.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700">İsim (Varsa)</label>
+              <input 
+                type="text"
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700">Tür</label>
+              <select 
+                value={formData.species}
+                onChange={e => setFormData({...formData, species: e.target.value})}
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              >
+                <option value="Dog">Köpek</option>
+                <option value="Cat">Kedi</option>
+                <option value="Other">Diğer</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700">Irk</label>
+              <input 
+                type="text"
+                value={formData.breed}
+                onChange={e => setFormData({...formData, breed: e.target.value})}
+                placeholder="Örn: Golden Retriever"
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700">Tahmini Yaş (Ay)</label>
+              <input 
+                required
+                type="number"
+                value={formData.age_estimate}
+                onChange={e => setFormData({...formData, age_estimate: e.target.value})}
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700">Cinsiyet</label>
+              <div className="mt-2 flex space-x-4">
+                 {['M', 'F'].map(s => (
+                   <button
+                     key={s}
+                     type="button"
+                     onClick={() => setFormData({...formData, sex: s})}
+                     className={`flex-1 rounded-xl py-3 text-sm font-bold border transition-all ${
+                       formData.sex === s ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                     }`}
+                   >
+                     {s === 'M' ? 'Erkek' : 'Dişi'}
+                   </button>
+                 ))}
+              </div>
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700">Eşkal / Belirgin Özellikler</label>
+              <textarea 
+                rows={3}
+                value={formData.color_markings}
+                onChange={e => setFormData({...formData, color_markings: e.target.value})}
+                className="mt-2 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50/50"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-orange-50 p-4 border border-orange-100 flex items-start space-x-3">
+             <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
+             <p className="text-xs text-orange-800 leading-relaxed font-medium">
+               Kayıt sonrası bu hayvanın sahiplik durumu <strong>Barınakta</strong> olarak işaretlenecek ve <strong>Beşiktaş Belediyesi</strong> üzerine tescil edilecektir.
+             </p>
+          </div>
+
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-blue-600 py-4 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-500/20"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ShieldCheck className="h-5 w-5 mr-1" /><span>Sisteme Kaydet</span></>}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
